@@ -1,0 +1,52 @@
+#!/bin/sh
+
+
+#Requires: ncursesw-utils.tcz, iproute2.tcz, sqlite3-bin.tcz, git.tcz, glibc_apps.tcz, coreutils.tcz
+
+# add the group if it doesnt exist
+grep -qw ^pihole /etc/group || addgroup -S pihole
+# Garuntees the creation of the group
+
+
+
+#if pihole user exists
+if id -u pihole &>/dev/null; then
+
+	# Then add the group to pihole, if it doesnt already have it
+	if ! id -nG pihole | grep -q ^pihole; then
+		adduser -G pihole pihole
+	fi
+
+else
+	# create pihole user and add it to the group
+	adduser -D -H -S -s /bin/false pihole -G pihole
+
+fi
+
+
+# copy read-only files to their readable clones
+#cp /tmp/pihole/gravity.db /etc/pihole/gravity.db
+#cp /tmp/pihole/gravity_old.db /etc/pihole/gravity_old.db
+#cp /tmp/pihole/macvendor.db /etc/pihole/macvendor.db
+#cp /tmp/pihole/pihole-FTL.db /etc/pihole/pihole-FTL.db
+#cp /tmp/pihole/pihole-FTL /usr/bin/pihole-FTL
+#cp /tmp/pihole/pihole-FTL.conf /etc/pihole/pihole-FTL.conf
+cp -rpH /tmp/pihole/* /etc/pihole/
+cp -rpH /tmp/pihole-FTL /usr/bin/pihole-FTL
+
+
+# set ownership of specific config and data files
+chown pihole:pihole /etc/pihole/gravity.db /etc/pihole/gravity_old.db /etc/pihole/macvendor.db /etc/pihole/pihole-FTL.db
+chown pihole:root /etc/pihole/pihole-FTL.conf
+
+# Create log files
+touch /var/log/pihole-FTL.log
+touch /var/log/pihole_updateGravity.log
+touch /var/log/pihole_debug.log
+touch /var/log/pihole.log
+
+# set ownership of these files
+chown pihole:pihole /var/log/pihole-FTL.log
+chown pihole:pihole /var/log/pihole_updateGravity.log
+chown pihole:pihole /var/log/pihole_debug.log
+chown pihole:pihole /var/log/pihole.log

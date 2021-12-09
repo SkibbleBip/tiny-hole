@@ -7,13 +7,13 @@
         <img src="https://pi-hole.github.io/graphics/Vortex/Vortex_with_Wordmark.svg" width="150" height="260" alt="Pi-hole">
     </a>
     <br>
-    <strong>Network-wide ad blocking via your own Linux hardware</strong>
+    <strong>Network-wide ad blocking via Tinycore</strong>
 </p>
 <!-- markdownlint-enable MD033 -->
 
-The Pi-hole® is a [DNS sinkhole](https://en.wikipedia.org/wiki/DNS_Sinkhole) that protects your devices from unwanted content without installing any client-side software.
+The Tiny-hole is a Tinycore port of Pi-hole®, a [DNS sinkhole](https://en.wikipedia.org/wiki/DNS_Sinkhole) that protects your devices from unwanted content without installing any client-side software.
 
-- **Easy-to-install**: our versatile installer walks you through the process and takes less than ten minutes
+- **(Somewhat)Easy-to-install**: Simply install using tce-load on the TinyCore Operating System.  
 - **Resolute**: content is blocked in _non-browser locations_, such as ad-laden mobile apps and smart TVs
 - **Responsive**: seamlessly speeds up the feel of everyday browsing by caching DNS queries
 - **Lightweight**: runs smoothly with [minimal hardware and software requirements](https://docs.pi-hole.net/main/prerequisites/)
@@ -30,28 +30,14 @@ The Pi-hole® is a [DNS sinkhole](https://en.wikipedia.org/wiki/DNS_Sinkhole) th
 
 Those who want to get started quickly and conveniently may install Pi-hole using the following command:
 
-### `curl -sSL https://install.pi-hole.net | bash`
+### `tce-load -i /location/of/pihole.tcz`
+or
+### `tce-load -wi pihole`
+once it gets added to the Tinycore repository
 
 ## Alternative Install Methods
 
-Piping to `bash` is [controversial](https://pi-hole.net/2016/07/25/curling-and-piping-to-bash), as it prevents you from [reading code that is about to run](https://github.com/pi-hole/pi-hole/blob/master/automated%20install/basic-install.sh) on your system. Therefore, we provide these alternative installation methods which allow code review before installation:
-
-### Method 1: Clone our repository and run
-
-```bash
-git clone --depth 1 https://github.com/pi-hole/pi-hole.git Pi-hole
-cd "Pi-hole/automated install/"
-sudo bash basic-install.sh
-```
-
-### Method 2: Manually download the installer and run
-
-```bash
-wget -O basic-install.sh https://install.pi-hole.net
-sudo bash basic-install.sh
-```
-### Method 3: Using Docker to deploy Pi-hole
-Please refer to the [Pi-hole docker repo](https://github.com/pi-hole/docker-pi-hole) to use the Official Docker Images.
+After downloading the tcz extension file, add the `pihole.tcz, pihole.tcz.dep,` and `pihole.tcz.md5.txt` to the `optional/` directory and append `pihole.tcz` to the `onboot.lst` file to autoload the extension on startup.
 
 ## [Post-install: Make your network take advantage of Pi-hole](https://docs.pi-hole.net/main/post-install/)
 
@@ -61,21 +47,41 @@ If your router does not support setting the DNS server, you can [use Pi-hole's b
 
 As a last resort, you can manually set each device to use Pi-hole as their DNS server.
 
+### IMPORTANT NOTE
+
+The default .tcz extension comes with google's dns and default settings. You will need to configure your install in the `/etc/pihole/setupVars.conf` configuration and change the DNS settings, as well as change the nameserver values in `/etc/resolv.conf` to your choice of DNS servers. 
+Afterwards, to retain persistence among reboots, add `etc/pihole` in `/opt/.filetool.lst` and run a backup.
+
+_Note: As of pihole-FTL version 5.11, there is a bug(?) in the FTL engine that, should the resolv.conf file be edited while the engine is running (including by udhcpd renewing an IP) the pihole software will begin rejecting DNS requests._ As the nameservers will be persistent, it is safe to edit the udhcpc script `/usr/share/udhcpc/default.script` to not change the resolv.conf file. Change the following line in the script:
+
+`echo -n > $RESOLV_CONF`
+
+to:
+
+``` \
+dns="" \
+#echo -n > $RESOLV_CONF \
+```
+This sets the DHCP variable `dns` to be blank, disallowing any processing of the nameservers later in the script and writing them to the file.
+The hash `#` comments out the echo command which would wipe the resolv.conf file. From this point on, the resolv.conf file will no longer be changed every lease renw.
+
 -----
 
 ## Pi-hole is free but powered by your support
 
-There are many reoccurring costs involved with maintaining free, open source, and privacy-respecting software; expenses which [our volunteer developers](https://github.com/orgs/pi-hole/people) pitch in to cover out-of-pocket. This is just one example of how strongly we feel about our software and the importance of keeping it maintained.
+Although Tiny-hole is derivative of the Pi-hole software and is developed and maintained parrallel to Pi-hole, the original Pi-hole software is an important contribution to the FOSS community and it would be beneficial to cover their costs of maintaining and developing the original Pi-hole software. As stated in the original README: 
 
-Make no mistake: **your support is absolutely vital to help keep us innovating!**
+>There are many reoccurring costs involved with maintaining free, open source, and privacy-respecting software; expenses which [our volunteer developers](https://github.com/orgs/pi-hole/people) pitch in to cover out-of-pocket. This is just one example of how strongly we feel about our software and the importance of keeping it maintained.
+
+>Make no mistake: **your support is absolutely vital to help keep us innovating!** 
 
 ### [Donations](https://pi-hole.net/donate)
 
-Donating using our Sponsor Button is **extremely helpful** in offsetting a portion of our monthly expenses:
+Donating using Pi-hole's Sponsor Button is **extremely helpful** in offsetting a portion of their monthly expenses:
 
 ### Alternative support
 
-If you'd rather not donate (_which is okay!_), there are other ways you can help support us:
+If you'd rather not donate (_which is okay!_), there are other ways you can help support Pi-hole:
 
 - [GitHub Sponsors](https://github.com/sponsors/pi-hole/)
 - [Patreon](https://patreon.com/pihole)
@@ -95,18 +101,6 @@ You'll find that the [install script](https://github.com/pi-hole/pi-hole/blob/ma
 
 -----
 
-## Getting in touch with us
-
-While we are primarily reachable on our [Discourse User Forum](https://discourse.pi-hole.net/), we can also be found on various social media outlets.
-
-**Please be sure to check the FAQs** before starting a new discussion, as we do not have the spare time to reply to every request for assistance.
-
-- [Frequently Asked Questions](https://discourse.pi-hole.net/c/faqs)
-- [Feature Requests](https://discourse.pi-hole.net/c/feature-requests?order=votes)
-- [Reddit](https://www.reddit.com/r/pihole/)
-- [Twitter](https://twitter.com/The_Pi_hole)
-
------
 
 ## Breakdown of Features
 
@@ -127,6 +121,8 @@ Some of the statistics you can integrate include:
 
 Access the API via [`telnet`](https://github.com/pi-hole/FTL), the Web (`admin/api.php`) and Command Line (`pihole -c -j`). You can find out [more details over here](https://discourse.pi-hole.net/t/pi-hole-api/1863).
 
+_Note: Web interface is not available for the Tiny-hole port_
+
 ### The Command Line Interface
 
 The [pihole](https://docs.pi-hole.net/core/pihole-command/) command has all the functionality necessary to fully administer the Pi-hole, without the need of the Web Interface. It's fast, user-friendly, and auditable by anyone with an understanding of `bash`.
@@ -142,23 +138,3 @@ Some notable features include:
 - ... and *many* more!
 
 You can read our [Core Feature Breakdown](https://docs.pi-hole.net/core/pihole-command/#pi-hole-core) for more information.
-
-### The Web Interface Dashboard
-
-This [optional dashboard](https://github.com/pi-hole/AdminLTE) allows you to view stats, change settings, and configure your Pi-hole. It's the power of the Command Line Interface, with none of the learning curve!
-
-Some notable features include:
-
-- Mobile-friendly interface
-- Password protection
-- Detailed graphs and doughnut charts
-- Top lists of domains and clients
-- A filterable and sortable query log
-- Long Term Statistics to view data over user-defined time ranges
-- The ability to easily manage and configure Pi-hole features
-- ... and all the main features of the Command Line Interface!
-
-There are several ways to [access the dashboard](https://discourse.pi-hole.net/t/how-do-i-access-pi-holes-dashboard-admin-interface/3168):
-
-1. `http://pi.hole/admin/` (when using Pi-hole as your DNS server)
-2. `http://<IP_ADDPRESS_OF_YOUR_PI_HOLE>/admin/`
