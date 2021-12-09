@@ -59,8 +59,8 @@ _Note: As of pihole-FTL version 5.11, there is a bug(?) in the FTL engine that, 
 to:
 
 ``` \
-dns="" \
-#echo -n > $RESOLV_CONF \
+dns="" 
+#echo -n > $RESOLV_CONF 
 ```
 This sets the DHCP variable `dns` to be blank, disallowing any processing of the nameservers later in the script and writing them to the file.
 The hash `#` comments out the echo command which would wipe the resolv.conf file. From this point on, the resolv.conf file will no longer be changed every lease renw.
